@@ -1,0 +1,35 @@
+.dashboard-wrapper {
+  background-color: #f5f6fa;
+  padding-top: 2rem;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+
+.card-custom {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card-custom:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: #007bff;
+}
+
+.emoji-circle {
+  width: 60px;
+  height: 60px;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #e6f0ff;
+  margin: 0 auto 0.5rem;
+}

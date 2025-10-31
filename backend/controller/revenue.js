@@ -1,10 +1,16 @@
-import mongoose from "mongoose";
 import Order from "../model/order.js";
-import User from "../model/user.js";
+import mongoose from "mongoose";
 
 export const getSystemWideRevenue = async (req, res) => {
   try {
-    const { startDate, endDate, range = "monthly" } = req.query;
+    if (req.user.role !== "host-admin") {
+      return res.status(403).json({
+        status: "fail",
+        message: "Access denied. Only host admins can view system-wide revenue.",
+      });
+    }
+
+    const { range = "monthly", startDate, endDate } = req.query;
 
     let start, end;
     if (startDate && endDate) {
@@ -16,17 +22,19 @@ export const getSystemWideRevenue = async (req, res) => {
       end = new Date();
       end.setHours(23, 59, 59, 999);
       start = new Date();
-      start.setMonth(end.getMonth() - 1);
+      start.setMonth(end.getMonth() - 1); // default last 30 days
       start.setHours(0, 0, 0, 0);
     }
 
+    // --- Match completed/active orders ---
     const matchStage = {
       $match: {
-        status: "Completed",
+        status: { $in: ["Completed", "Active"] },
         createdAt: { $gte: start, $lte: end },
       },
     };
 
+    // --- Dynamic grouping ---
     let groupId;
     switch (range) {
       case "daily":
@@ -39,7 +47,13 @@ export const getSystemWideRevenue = async (req, res) => {
       case "weekly":
         groupId = {
           year: { $year: "$createdAt" },
-          week: { $isoWeek: "$createdAt" },
+          week: { $week: "$createdAt" },
+        };
+        break;
+      case "monthly":
+        groupId = {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
         };
         break;
       case "quarterly":
@@ -52,83 +66,103 @@ export const getSystemWideRevenue = async (req, res) => {
         groupId = { year: { $year: "$createdAt" } };
         break;
       default:
-        groupId = {
-          year: { $year: "$createdAt" },
-          month: { $month: "$createdAt" },
-        };
+        return res.status(400).json({ status: "fail", message: "Invalid range" });
     }
 
-    const orgWiseRevenue = await Order.aggregate([
+    // --- Aggregation ---
+    const report = await Order.aggregate([
       matchStage,
       {
         $group: {
-          _id: "$organizationAdminId",
+          _id: {
+            ...groupId,
+            organizationAdminId: "$organizationAdminId",
+          },
           totalRevenue: { $sum: "$grandTotal" },
+          totalTax: { $sum: "$taxAmount" },
           totalOrders: { $sum: 1 },
         },
       },
       {
         $lookup: {
           from: "users",
-          localField: "_id",
+          localField: "_id.organizationAdminId",
           foreignField: "_id",
-          as: "organizationAdmin",
+          as: "organizationAdminDetails",
         },
       },
-      { $unwind: "$organizationAdmin" },
+      {
+        $unwind: {
+          path: "$organizationAdminDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $project: {
-          _id: 0,
-          organizationAdminId: "$organizationAdmin._id",
-          organizationName: {
-            $concat: [
-              "$organizationAdmin.firstName",
-              " ",
-              "$organizationAdmin.lastName",
-            ],
-          },
-          email: "$organizationAdmin.email",
+          _id: 1,
           totalRevenue: 1,
           totalOrders: 1,
+          totalTax: 1,
+          organizationAdmin: "$organizationAdminDetails.email",
         },
       },
-      { $sort: { totalRevenue: -1 } },
+      // --- ✅ Chronological Sort Fix ---
+      {
+        $addFields: {
+          sortDate: {
+            $dateFromParts: {
+              year: "$_id.year",
+              month: "$_id.month",
+              day: { $ifNull: ["$_id.day", 1] },
+            },
+          },
+        },
+      },
+      { $sort: { sortDate: 1 } },
     ]);
 
-    const trendData = await Order.aggregate([
+    // --- Global Totals ---
+    const overallStats = await Order.aggregate([
       matchStage,
       {
         $group: {
-          _id: groupId,
+          _id: null,
           totalRevenue: { $sum: "$grandTotal" },
+          totalOrders: { $sum: 1 },
+          totalTax: { $sum: "$taxAmount" },
+          totalOrganizations: { $addToSet: "$organizationAdminId" },
         },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.week": 1 } },
+      {
+        $project: {
+          _id: 0,
+          totalRevenue: 1,
+          totalOrders: 1,
+          totalTax: 1,
+          totalOrganizations: { $size: "$totalOrganizations" },
+        },
+      },
     ]);
 
-    const totalSystemRevenue = orgWiseRevenue.reduce(
-      (acc, o) => acc + o.totalRevenue,
-      0
-    );
-    const totalOrders = orgWiseRevenue.reduce(
-      (acc, o) => acc + o.totalOrders,
-      0
-    );
+    const summary = overallStats[0] || {
+      totalRevenue: 0,
+      totalOrders: 0,
+      totalTax: 0,
+      totalOrganizations: 0,
+    };
 
     res.status(200).json({
       status: "success",
       filterRange: { start, end },
       groupType: range,
-      summary: { totalSystemRevenue, totalOrders },
-      organizationWise: orgWiseRevenue,
-      trendOverTime: trendData,
+      summary,
+      data: report,
     });
   } catch (err) {
-    console.error("❌ Error fetching Host Admin revenue data:", err.message);
+    console.error("❌ Error generating system-wide revenue report:", err.message);
     res.status(500).json({
       status: "error",
-      message: "Failed to fetch revenue visualization data",
-      error: err.message,
+      message: err.message,
     });
   }
 };

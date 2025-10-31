@@ -28,6 +28,7 @@ export const getOrgAdminPLReport = async (req, res) => {
       },
     };
 
+    // ✅ Dynamic grouping with week and quarter support
     let groupId;
     switch (range) {
       case "daily":
@@ -35,6 +36,12 @@ export const getOrgAdminPLReport = async (req, res) => {
           year: { $year: "$createdAt" },
           month: { $month: "$createdAt" },
           day: { $dayOfMonth: "$createdAt" },
+        };
+        break;
+      case "weekly":
+        groupId = {
+          year: { $year: "$createdAt" },
+          week: { $week: "$createdAt" },
         };
         break;
       case "monthly":
@@ -68,7 +75,6 @@ export const getOrgAdminPLReport = async (req, res) => {
         },
       },
       { $unwind: "$productDetails" },
-
       {
         $addFields: {
           actualCP: {
@@ -105,7 +111,6 @@ export const getOrgAdminPLReport = async (req, res) => {
           },
         },
       },
-
       {
         $group: {
           _id: groupId,
@@ -115,14 +120,66 @@ export const getOrgAdminPLReport = async (req, res) => {
           totalTax: { $sum: { $ifNull: ["$taxAmount", 0] } },
         },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
+      // ✅ Chronological sorting using a sortDate field
+      {
+        $addFields: {
+          sortDate: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: [range, "weekly"] },
+                  then: {
+                    $dateFromParts: {
+                      isoWeekYear: "$_id.year",
+                      isoWeek: "$_id.week",
+                      isoDayOfWeek: 1,
+                    },
+                  },
+                },
+                {
+                  case: { $eq: [range, "quarterly"] },
+                  then: {
+                    $dateFromParts: {
+                      year: "$_id.year",
+                      month: { $multiply: [{ $subtract: ["$_id.quarter", 1] }, 3] },
+                      day: 1,
+                    },
+                  },
+                },
+              ],
+              default: {
+                $dateFromParts: {
+                  year: "$_id.year",
+                  month: { $ifNull: ["$_id.month", 1] },
+                  day: { $ifNull: ["$_id.day", 1] },
+                },
+              },
+            },
+          },
+        },
+      },
+      { $sort: { sortDate: 1 } },
     ]);
 
     const formattedReport = report.map((r) => {
       const profit = r.totalSP - r.totalCost;
       const loss = r.totalCost > r.totalSP ? r.totalCost - r.totalSP : 0;
 
+      let label = "";
+      if (range === "weekly" && r._id.week) {
+        label = `Week ${r._id.week}, ${r._id.year}`;
+      } else if (range === "quarterly" && r._id.quarter) {
+        label = `Q${r._id.quarter}, ${r._id.year}`;
+      } else if (range === "monthly" && r._id.month) {
+        label = `${r._id.month}/${r._id.year}`;
+      } else if (range === "daily" && r._id.day) {
+        label = `${r._id.day}/${r._id.month}/${r._id.year}`;
+      } else {
+        label = `${r._id.year}`;
+      }
+
       return {
+        label,
         _id: r._id,
         totalRevenue: r.totalRevenue,
         totalCost: r.totalCost,

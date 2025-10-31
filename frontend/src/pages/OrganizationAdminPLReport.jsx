@@ -36,14 +36,16 @@ const OrganizationAdminPLReport = () => {
     try {
       const res = await api.get("/organization-admin/reports/pl-report", { params: filters });
       setReportData(res.data.data || []);
-      setSummary(res.data.summary || {
-        totalRevenue: 0,
-        totalCost: 0,
-        profit: 0,
-        loss: 0,
-        totalGST: 0,
-        nonGSTRevenue: 0,
-      });
+      setSummary(
+        res.data.summary || {
+          totalRevenue: 0,
+          totalCost: 0,
+          profit: 0,
+          loss: 0,
+          totalGST: 0,
+          nonGSTRevenue: 0,
+        }
+      );
     } catch (err) {
       console.error(err);
       triggerNotification("Failed to fetch P&L report.", "danger");
@@ -70,7 +72,11 @@ const OrganizationAdminPLReport = () => {
 
       <div className="d-flex justify-content-between align-items-center py-3 flex-wrap">
         <h3 className="fw-bold mb-0">Organization Admin P&L Report</h3>
-        <form className="d-flex gap-2 flex-wrap" onSubmit={handleFilterSubmit} style={{ minWidth: "300px" }}>
+        <form
+          className="d-flex gap-2 flex-wrap"
+          onSubmit={handleFilterSubmit}
+          style={{ minWidth: "300px" }}
+        >
           <input
             type="date"
             className="form-control form-control-sm"
@@ -92,6 +98,7 @@ const OrganizationAdminPLReport = () => {
             onChange={(e) => setFilters({ ...filters, range: e.target.value })}
           >
             <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
             <option value="quarterly">Quarterly</option>
             <option value="yearly">Yearly</option>
@@ -108,12 +115,42 @@ const OrganizationAdminPLReport = () => {
         <>
           <div className="row row-cols-1 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
             {[
-              { title: "Total Revenue (₹)", value: summary.totalRevenue, icon: <FaDollarSign size={24} />, bg: "bg-success" },
-              { title: "Total Cost (₹)", value: summary.totalCost, icon: <FaMoneyBillWave size={24} />, bg: "bg-primary" },
-              { title: "Profit (₹)", value: summary.profit, icon: <FaBalanceScale size={24} />, bg: "bg-success" },
-              { title: "Loss (₹)", value: summary.loss, icon: <FaBalanceScale size={24} />, bg: "bg-danger" },
-              { title: "GST (₹)", value: summary.totalGST, icon: <FaPercentage size={24} />, bg: "bg-info" },
-              { title: "Non-GST Revenue (₹)", value: summary.nonGSTRevenue, icon: <FaDollarSign size={24} />, bg: "bg-warning" },
+              {
+                title: "Total Revenue (₹)",
+                value: summary.totalRevenue,
+                icon: <FaDollarSign size={24} />,
+                bg: "bg-success",
+              },
+              {
+                title: "Total Cost (₹)",
+                value: summary.totalCost,
+                icon: <FaMoneyBillWave size={24} />,
+                bg: "bg-primary",
+              },
+              {
+                title: "Profit (₹)",
+                value: summary.profit,
+                icon: <FaBalanceScale size={24} />,
+                bg: "bg-success",
+              },
+              {
+                title: "Loss (₹)",
+                value: summary.loss,
+                icon: <FaBalanceScale size={24} />,
+                bg: "bg-danger",
+              },
+              {
+                title: "GST (₹)",
+                value: summary.totalGST,
+                icon: <FaPercentage size={24} />,
+                bg: "bg-info",
+              },
+              {
+                title: "Non-GST Revenue (₹)",
+                value: summary.nonGSTRevenue,
+                icon: <FaDollarSign size={24} />,
+                bg: "bg-warning",
+              },
             ].map((item) => (
               <div className="col" key={item.title}>
                 <div className={`card text-white ${item.bg} shadow-sm rounded-4 h-100`}>
@@ -121,7 +158,9 @@ const OrganizationAdminPLReport = () => {
                     <div>{item.icon}</div>
                     <div>
                       <h6 className="card-title mb-1">{item.title}</h6>
-                      <h5 className="card-text mb-0">{typeof item.value === "number" ? item.value.toFixed(2) : item.value}</h5>
+                      <h5 className="card-text mb-0">
+                        {typeof item.value === "number" ? item.value.toFixed(2) : item.value}
+                      </h5>
                     </div>
                   </div>
                 </div>
@@ -146,25 +185,17 @@ const OrganizationAdminPLReport = () => {
                   </thead>
                   <tbody>
                     {reportData.length ? (
-                      reportData.map((item, i) => {
-                        let timeLabel = "";
-                        if (item._id.day) timeLabel = `${item._id.year}-${item._id.month}-${item._id.day}`;
-                        else if (item._id.month) timeLabel = `${item._id.year}-${item._id.month}`;
-                        else if (item._id.quarter) timeLabel = `Q${item._id.quarter} ${item._id.year}`;
-                        else if (item._id.year) timeLabel = `${item._id.year}`;
-
-                        return (
-                          <tr key={i} className="align-middle">
-                            <td>{timeLabel}</td>
-                            <td>{item.totalRevenue.toFixed(2)}</td>
-                            <td>{item.totalCost.toFixed(2)}</td>
-                            <td className="text-success">{item.profit.toFixed(2)}</td>
-                            <td className="text-danger">{item.loss.toFixed(2)}</td>
-                            <td>{item.totalGST.toFixed(2)}</td>
-                            <td>{item.nonGSTRevenue.toFixed(2)}</td>
-                          </tr>
-                        );
-                      })
+                      reportData.map((item, i) => (
+                        <tr key={i} className="align-middle">
+                          <td>{item.label}</td>
+                          <td>{item.totalRevenue.toFixed(2)}</td>
+                          <td>{item.totalCost.toFixed(2)}</td>
+                          <td className="text-success">{item.profit.toFixed(2)}</td>
+                          <td className="text-danger">{item.loss.toFixed(2)}</td>
+                          <td>{item.totalGST.toFixed(2)}</td>
+                          <td>{item.nonGSTRevenue.toFixed(2)}</td>
+                        </tr>
+                      ))
                     ) : (
                       <tr>
                         <td colSpan="7" className="text-center py-4 text-muted">

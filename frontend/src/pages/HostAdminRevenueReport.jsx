@@ -216,7 +216,9 @@ const HostAdminRevenueReport = () => {
               },
             ].map((card) => (
               <div className="col-md-3 mb-3" key={card.title}>
-                <div className={`card text-white ${card.bg} shadow-sm rounded-4`}>
+                <div
+                  className={`card text-white ${card.bg} shadow-sm rounded-4`}
+                >
                   <div className="card-body d-flex align-items-center gap-3">
                     {card.icon}
                     <div>
@@ -286,9 +288,7 @@ const HostAdminRevenueReport = () => {
                               ? `Week ${item._id.week}, ${item._id.year}`
                               : filters.range === "quarterly"
                               ? `Q${item._id.quarter} ${item._id.year}`
-                              : `${item._id.year}-${item._id.month
-                                  ?.toString()
-                                  .padStart(2, "0")}`}
+                              : `${item._id.year}`}
                           </td>
                           <td>{safeNumber(item.totalRevenue)}</td>
                           <td>{item.totalOrders}</td>

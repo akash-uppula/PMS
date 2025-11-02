@@ -178,7 +178,7 @@ const EmployeeSalary = () => {
                     <strong>Employee:</strong> {salaryData.employee}
                   </p>
                   <p>
-                    <strong>Fixed Salary:</strong> ₹{salaryData.fixedSalary}
+                    <strong>Fixed Salary:</strong> ${salaryData.fixedSalary}
                   </p>
                   <p>
                     <strong>Total Days:</strong> {salaryData.totalDays}
@@ -192,13 +192,13 @@ const EmployeeSalary = () => {
                     <strong>Absent Days:</strong> {salaryData.absentDays}
                   </p>
                   <p>
-                    <strong>Per Day Salary:</strong> ₹{salaryData.perDaySalary}
+                    <strong>Per Day Salary:</strong> ${salaryData.perDaySalary}
                   </p>
                 </div>
               </div>
               <div className="border-top pt-3 text-center">
                 <h5 className="text-primary fw-bold">
-                  Final Salary: ₹{salaryData.finalSalary}
+                  Final Salary: ${salaryData.finalSalary}
                 </h5>
               </div>
             </div>

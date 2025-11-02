@@ -167,13 +167,13 @@ export const getOrgAdminPLReport = async (req, res) => {
 
       let label = "";
       if (range === "weekly" && r._id.week) {
-        label = `Week ${r._id.week}, ${r._id.year}`;
+        label = `Week ${r._id.week.toString().padStart(2, "0")}, ${r._id.year}`;
       } else if (range === "quarterly" && r._id.quarter) {
         label = `Q${r._id.quarter} ${r._id.year}`;
       } else if (range === "monthly" && r._id.month) {
-        label = `${r._id.year}-${r._id.month}`;
+        label = `${r._id.year}-${r._id.month.toString().padStart(2, "0")}`;
       } else if (range === "daily" && r._id.day) {
-        label = `${r._id.year}-${r._id.month}-${r._id.day}`;
+        label = `${r._id.year}-${r._id.month.toString().padStart(2, "0")}-${r._id.day.toString().padStart(2, "0")}`;
       } else {
         label = `${r._id.year}`;
       }

@@ -280,15 +280,23 @@ const HostAdminRevenueReport = () => {
                         <tr key={i}>
                           <td>{item.organizationAdmin || "N/A"}</td>
                           <td>
-                            {filters.range === "daily"
-                              ? `${item._id.year}-${item._id.month
-                                  ?.toString()
-                                  .padStart(2, "0")}-${item._id.day}`
-                              : filters.range === "weekly"
-                              ? `Week ${item._id.week}, ${item._id.year}`
-                              : filters.range === "quarterly"
-                              ? `Q${item._id.quarter} ${item._id.year}`
-                              : `${item._id.year}`}
+                            <td>
+                              {filters.range === "daily"
+                                ? `${item._id.year}-${item._id.month
+                                    ?.toString()
+                                    .padStart(2, "0")}-${item._id.day?.toString()
+                            .padStart(2, "0")}`
+                                : filters.range === "weekly"
+                                ? `Week ${item._id.week?.toString()
+                            .padStart(2, "0")}, ${item._id.year}`
+                                : filters.range === "monthly"
+                                ? `${item._id.year}-${item._id.month
+                                    ?.toString()
+                                    .padStart(2, "0")}`
+                                : filters.range === "quarterly"
+                                ? `Q${item._id.quarter} ${item._id.year}`
+                                : `${item._id.year}`}
+                            </td>
                           </td>
                           <td>{safeNumber(item.totalRevenue)}</td>
                           <td>{item.totalOrders}</td>

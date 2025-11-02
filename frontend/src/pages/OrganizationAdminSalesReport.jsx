@@ -31,9 +31,17 @@ const OrganizationAdminSalesReport = () => {
 
     setIsLoading(true);
     try {
-      const res = await api.get("/organization-admin/reports/sales", { params: filters });
+      const res = await api.get("/organization-admin/reports/sales", {
+        params: filters,
+      });
       setReportData(res.data.data || []);
-      setSummary(res.data.summary || { totalRevenue: 0, totalOrders: 0, totalProductsSold: 0 });
+      setSummary(
+        res.data.summary || {
+          totalRevenue: 0,
+          totalOrders: 0,
+          totalProductsSold: 0,
+        }
+      );
     } catch (err) {
       console.error(err);
       triggerNotification("Failed to fetch report.", "danger");
@@ -60,20 +68,28 @@ const OrganizationAdminSalesReport = () => {
 
       <div className="d-flex justify-content-between align-items-center py-3 flex-wrap">
         <h3 className="fw-bold mb-0">Organization Admin Sales Report</h3>
-        <form className="d-flex gap-2 flex-wrap" onSubmit={handleFilterSubmit} style={{ minWidth: "300px" }}>
+        <form
+          className="d-flex gap-2 flex-wrap"
+          onSubmit={handleFilterSubmit}
+          style={{ minWidth: "300px" }}
+        >
           <input
             type="date"
             className="form-control form-control-sm"
             style={{ width: "120px" }}
             value={filters.startDate}
-            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+            onChange={(e) =>
+              setFilters({ ...filters, startDate: e.target.value })
+            }
           />
           <input
             type="date"
             className="form-control form-control-sm"
             style={{ width: "120px" }}
             value={filters.endDate}
-            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+            onChange={(e) =>
+              setFilters({ ...filters, endDate: e.target.value })
+            }
           />
           <select
             className="form-select form-select-sm"
@@ -93,23 +109,47 @@ const OrganizationAdminSalesReport = () => {
 
       {isLoading ? (
         <div className="d-flex justify-content-center vh-100 align-items-center">
-          <div className="spinner-border text-primary" style={{ width: "3rem", height: "3rem" }}></div>
+          <div
+            className="spinner-border text-primary"
+            style={{ width: "3rem", height: "3rem" }}
+          ></div>
         </div>
       ) : (
         <>
           <div className="row mb-4">
             {[
-              { title: "Total Revenue (₹)", value: summary.totalRevenue, icon: <FaDollarSign size={24} />, bg: "bg-success" },
-              { title: "Total Orders", value: summary.totalOrders, icon: <FaShoppingCart size={24} />, bg: "bg-primary" },
-              { title: "Products Sold", value: summary.totalProductsSold, icon: <FaBox size={24} />, bg: "bg-warning" },
+              {
+                title: "Total Revenue (₹)",
+                value: summary.totalRevenue,
+                icon: <FaDollarSign size={24} />,
+                bg: "bg-success",
+              },
+              {
+                title: "Total Orders",
+                value: summary.totalOrders,
+                icon: <FaShoppingCart size={24} />,
+                bg: "bg-primary",
+              },
+              {
+                title: "Products Sold",
+                value: summary.totalProductsSold,
+                icon: <FaBox size={24} />,
+                bg: "bg-warning",
+              },
             ].map((item) => (
               <div className="col-md-4 mb-3" key={item.title}>
-                <div className={`card text-white ${item.bg} shadow-sm rounded-4`}>
+                <div
+                  className={`card text-white ${item.bg} shadow-sm rounded-4`}
+                >
                   <div className="card-body d-flex align-items-center gap-3">
                     <div>{item.icon}</div>
                     <div>
                       <h6 className="card-title mb-1">{item.title}</h6>
-                      <h4 className="card-text mb-0">{typeof item.value === "number" ? item.value.toFixed(2) : item.value}</h4>
+                      <h4 className="card-text mb-0">
+                        {typeof item.value === "number"
+                          ? item.value.toFixed(2)
+                          : item.value}
+                      </h4>
                     </div>
                   </div>
                 </div>
@@ -134,10 +174,22 @@ const OrganizationAdminSalesReport = () => {
                     {reportData.length ? (
                       reportData.map((item, i) => {
                         let timeLabel = "";
-                        if (item._id.day) timeLabel = `${item._id.year}-${item._id.month}-${item._id.day}`;
-                        else if (item._id.week) timeLabel = `Week ${item._id.week}, ${item._id.year}`;
-                        else if (item._id.month) timeLabel = `${item._id.year}-${item._id.month}`;
-                        else if (item._id.quarter) timeLabel = `Q${item._id.quarter} ${item._id.year}`;
+                        if (item._id.day)
+                          timeLabel = `${item._id.year}-${item._id.month
+                            .toString()
+                            .padStart(2, "0")}-${item._id.day
+                            .toString()
+                            .padStart(2, "0")}`;
+                        else if (item._id.week)
+                          timeLabel = `Week ${item._id.week
+                            .toString()
+                            .padStart(2, "0")}, ${item._id.year}`;
+                        else if (item._id.month)
+                          timeLabel = `${item._id.year}-${item._id.month
+                            .toString()
+                            .padStart(2, "0")}`;
+                        else if (item._id.quarter)
+                          timeLabel = `Q${item._id.quarter} ${item._id.year}`;
                         else if (item._id.year) timeLabel = `${item._id.year}`;
 
                         return (

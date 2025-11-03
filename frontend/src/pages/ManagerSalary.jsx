@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axiosInstance";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ManagerSalary = () => {
   const [managers, setManagers] = useState([]);
@@ -45,10 +47,7 @@ const ManagerSalary = () => {
       }
 
       if (startObj > endObj) {
-        triggerNotification(
-          "End date must be after the start date.",
-          "warning"
-        );
+        triggerNotification("End date must be after the start date.", "warning");
         setEndDate("");
         return false;
       }
@@ -81,11 +80,13 @@ const ManagerSalary = () => {
     setSalaryData(null);
 
     try {
-      const res = await api.get(`/organization-admin/salary/manager/${selectedManager}`, {
-        params: { startDate, endDate },
-      });
+      const res = await api.get(
+        `/organization-admin/salary/manager/${selectedManager}`,
+        {
+          params: { startDate, endDate },
+        }
+      );
       setSalaryData(res.data.data);
-      console.log(res.data.data);
       triggerNotification("Salary calculated successfully!", "success");
     } catch (err) {
       triggerNotification(
@@ -95,6 +96,44 @@ const ManagerSalary = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!salaryData) return;
+
+    const doc = new jsPDF();
+    const title = "Manager Salary Slip";
+
+    doc.setFontSize(16);
+    doc.text(title, 14, 20);
+    doc.setFontSize(11);
+    doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 30);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [["Field", "Details"]],
+      body: [
+        ["Manager", salaryData.manager],
+        ["Fixed Salary", `$${salaryData.fixedSalary}`],
+        ["Total Days", salaryData.totalDays],
+        ["Present Days", salaryData.totalPresentDays],
+        ["Absent Days", salaryData.absentDays],
+        ["Per Day Salary", `$${salaryData.perDaySalary}`],
+        ["Final Salary", `$${salaryData.finalSalary}`],
+      ],
+      theme: "striped",
+      headStyles: { fillColor: [22, 160, 133] },
+      styles: { halign: "center" },
+    });
+
+    doc.text(
+      "Thank you for your leadership and hard work!",
+      14,
+      doc.lastAutoTable.finalY + 10
+    );
+    doc.save(
+      `Manager_Salary_Slip_${salaryData.manager}_${startDate}_to_${endDate}.pdf`
+    );
   };
 
   return (
@@ -204,6 +243,15 @@ const ManagerSalary = () => {
                 <h5 className="text-primary fw-bold">
                   Final Salary: ${salaryData.finalSalary}
                 </h5>
+              </div>
+
+              <div className="text-center mt-4">
+                <button
+                  className="btn btn-outline-success fw-semibold"
+                  onClick={handleDownloadPDF}
+                >
+                  📄 Download Salary Slip (PDF)
+                </button>
               </div>
             </div>
           )}

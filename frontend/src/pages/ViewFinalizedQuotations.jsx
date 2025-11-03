@@ -45,10 +45,14 @@ const ViewFinalizedQuotations = () => {
   const generatePDF = (quotation, paymentMethod) => {
     const doc = new jsPDF();
 
-    doc.setFontSize(18);
-    doc.text("Order Receipt", 14, 20);
+    doc.setFontSize(16);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const title = "Order Receipt";
+    const textWidth = doc.getTextWidth(title);
+    const x = (pageWidth - textWidth) / 2;
+    doc.text(title, x, 20);
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text(`Date: ${new Date(quotation.createdAt).toLocaleDateString()}`, 14, 30);
     doc.text("Company: PMS", 14, 37);
     doc.text("Email: pms@email.com", 14, 44);
@@ -56,7 +60,7 @@ const ViewFinalizedQuotations = () => {
 
     doc.setFontSize(14);
     doc.text("Customer Details:", 14, 65);
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text(`Name: ${quotation.customer?.name || "N/A"}`, 14, 73);
     doc.text(`Email: ${quotation.customer?.email || "N/A"}`, 14, 80);
     doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, 14, 87);
@@ -92,11 +96,11 @@ const ViewFinalizedQuotations = () => {
 
     const finalY = doc.lastAutoTable.finalY + 10;
 
-    doc.setFontSize(13);
+    doc.setFontSize(11);
     doc.text(`Tax Rate: ${quotation.taxRate || 0}%`, 14, finalY);
     doc.text(`Shipping Fee: $${quotation.shippingFee || 0}`, 14, finalY + 8);
     doc.text(`Other Charges: $${quotation.otherCharges || 0}`, 14, finalY + 16);
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.text(`Grand Total: $${quotation.grandTotal?.toFixed(2) || 0}`, 14, finalY + 26);
 
     doc.setFontSize(11);

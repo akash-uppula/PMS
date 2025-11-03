@@ -137,10 +137,14 @@ const ViewDraftQuotations = () => {
   const generatePDF = (quotation) => {
     const doc = new jsPDF();
 
-    doc.setFontSize(18);
-    doc.text("Quotation", 14, 20);
+    doc.setFontSize(16);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const title = "Quotation";
+    const textWidth = doc.getTextWidth(title);
+    const x = (pageWidth - textWidth) / 2;
+    doc.text(title, x, 20);
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
     doc.text("Company: PMS", 14, 37);
     doc.text("Email: pms@email.com", 14, 44);
@@ -148,7 +152,7 @@ const ViewDraftQuotations = () => {
 
     doc.setFontSize(14);
     doc.text("Customer Details:", 14, 65);
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text(`Name: ${quotation.customer?.name || "N/A"}`, 14, 73);
     doc.text(`Email: ${quotation.customer?.email || "N/A"}`, 14, 80);
     doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, 14, 87);
@@ -186,7 +190,7 @@ const ViewDraftQuotations = () => {
     const grandTotal =
       quotation.totalAmount?.toFixed(2) || calculateTotal() || "0.00";
 
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.text(`Grand Total: $${grandTotal}`, 14, finalY);
 
     doc.setFontSize(11);

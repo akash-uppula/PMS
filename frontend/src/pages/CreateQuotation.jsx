@@ -74,10 +74,14 @@ const CreateQuotation = () => {
   const generatePDF = () => {
     const doc = new jsPDF();
 
-    doc.setFontSize(18);
-    doc.text("Quotation", 14, 20);
+    doc.setFontSize(16);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const title = "Quotation";
+    const textWidth = doc.getTextWidth(title);
+    const x = (pageWidth - textWidth) / 2;
+    doc.text(title, x, 20);
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
     doc.text("Company: PMS", 14, 37);
     doc.text("Email: pms@email.com", 14, 44);
@@ -85,7 +89,7 @@ const CreateQuotation = () => {
 
     doc.setFontSize(14);
     doc.text("Customer Details:", 14, 65);
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text(`Name: ${customer.name}`, 14, 73);
     doc.text(`Email: ${customer.email || "N/A"}`, 14, 80);
     doc.text(`Phone: ${customer.phone || "N/A"}`, 14, 87);
@@ -117,7 +121,7 @@ const CreateQuotation = () => {
     const finalY = doc.lastAutoTable.finalY + 10;
     const grandTotal = calculateTotal();
 
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.text(`Grand Total: $${grandTotal}`, 14, finalY);
 
     doc.setFontSize(11);

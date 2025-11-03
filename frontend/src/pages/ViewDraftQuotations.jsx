@@ -1,12 +1,12 @@
-// src/pages/ViewDraftQuotations.jsx
 import React, { useState, useEffect } from "react";
 import api from "../api/axiosInstance";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ViewDraftQuotations = () => {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-
   const [showModal, setShowModal] = useState(false);
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [customer, setCustomer] = useState({ name: "", email: "", phone: "" });
@@ -119,8 +119,8 @@ const ViewDraftQuotations = () => {
     }
   };
 
-  const calculateTotal = () => {
-    return items
+  const calculateTotal = () =>
+    items
       .reduce((sum, item) => {
         const product = products.find((p) => p._id === item.product);
         if (!product) return sum;
@@ -133,6 +133,66 @@ const ViewDraftQuotations = () => {
         return sum + finalPrice;
       }, 0)
       .toFixed(2);
+
+  const generatePDF = (quotation) => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Quotation Document", 14, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text("Company: PMS", 14, 37);
+    doc.text("Email: pms@email.com", 14, 44);
+    doc.text("Phone: +91-7013447197", 14, 51);
+
+    doc.setFontSize(14);
+    doc.text("Customer Details:", 14, 65);
+    doc.setFontSize(12);
+    doc.text(`Name: ${quotation.customer?.name || "N/A"}`, 14, 73);
+    doc.text(`Email: ${quotation.customer?.email || "N/A"}`, 14, 80);
+    doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, 14, 87);
+
+    const tableBody = (quotation.items || []).map((item, index) => {
+      const product =
+        typeof item.product === "object"
+          ? item.product
+          : products.find((p) => p._id === item.product);
+      const price = product?.price || 0;
+      const discount = Math.min(item.discount || 0, product?.maxDiscount || 100);
+      const total = ((price - (price * discount) / 100) * item.quantity).toFixed(
+        2
+      );
+      return [
+        index + 1,
+        product?.name || "Unknown",
+        `$${price}`,
+        `${item.quantity}`,
+        `${discount}%`,
+        `$${total}`,
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 100,
+      head: [["#", "Product", "Price", "Qty", "Discount", "Total"]],
+      body: tableBody,
+      theme: "striped",
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      styles: { halign: "center" },
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 10;
+    const grandTotal =
+      quotation.totalAmount?.toFixed(2) || calculateTotal() || "0.00";
+
+    doc.setFontSize(14);
+    doc.text(`Grand Total: $${grandTotal}`, 14, finalY);
+
+    doc.setFontSize(11);
+    doc.text("Thank you for your business!", 14, finalY + 15);
+
+    doc.save(`Quotation_${quotation.customer?.name || "Customer"}_${Date.now()}.pdf`);
   };
 
   if (loading)
@@ -141,14 +201,9 @@ const ViewDraftQuotations = () => {
     return (
       <div className="container py-4 d-flex flex-column align-items-center">
         <h2 className="mb-4 text-center">Draft Quotations</h2>
-        <div className="text-center" style={{ maxWidth: "600px" }}>
-          <p className="text-secondary fs-6">
-            You don’t have any draft quotations yet.
-            <br />
-            Once you start creating quotations, they will appear here for easy
-            tracking and management.
-          </p>
-        </div>
+        <p className="text-secondary text-center">
+          You don’t have any draft quotations yet.
+        </p>
       </div>
     );
 
@@ -165,9 +220,7 @@ const ViewDraftQuotations = () => {
                 <h5 className="card-title">{q.customer?.name}</h5>
                 {q.customer?.email && <p>📧 {q.customer.email}</p>}
                 {q.customer?.phone && <p>📞 {q.customer.phone}</p>}
-                <p className="fw-bold">
-                  Total: ${q.totalAmount?.toFixed(2) || 0}
-                </p>
+                <p className="fw-bold">Total: ${q.totalAmount?.toFixed(2) || 0}</p>
                 <span className="badge bg-secondary">{q.status}</span>
 
                 <div className="d-flex gap-2 mt-3">
@@ -176,6 +229,12 @@ const ViewDraftQuotations = () => {
                     onClick={() => handleEdit(q)}
                   >
                     View/Edit
+                  </button>
+                  <button
+                    className="btn btn-success flex-grow-1"
+                    onClick={() => generatePDF(q)}
+                  >
+                    Download PDF
                   </button>
                   <button
                     className="btn btn-danger flex-grow-1"
@@ -190,7 +249,6 @@ const ViewDraftQuotations = () => {
         ))}
       </div>
 
-      {/* Edit Modal */}
       {showModal && (
         <div
           className="modal show d-block"
@@ -235,7 +293,6 @@ const ViewDraftQuotations = () => {
                 />
 
                 <h6 className="fw-bold mt-4">Items</h6>
-                {/* Headings */}
                 <div className="row fw-bold text-center mb-2">
                   <div className="col-md-6">Product</div>
                   <div className="col-md-2">Quantity</div>
@@ -243,11 +300,9 @@ const ViewDraftQuotations = () => {
                   <div className="col-md-2">Actions</div>
                 </div>
 
-                {/* Item Rows */}
                 {items.map((item, index) => {
                   const product = products.find((p) => p._id === item.product);
                   const maxDiscount = product?.maxDiscount || 100;
-
                   const availableProducts = products.filter(
                     (p) =>
                       p._id === item.product ||
@@ -268,7 +323,6 @@ const ViewDraftQuotations = () => {
                           onChange={(e) =>
                             handleItemChange(index, "product", e.target.value)
                           }
-                          required
                         >
                           <option value="" disabled>
                             Select Product
@@ -280,7 +334,6 @@ const ViewDraftQuotations = () => {
                           ))}
                         </select>
                       </div>
-
                       <div className="col-md-2">
                         <input
                           type="number"
@@ -292,7 +345,6 @@ const ViewDraftQuotations = () => {
                           }
                         />
                       </div>
-
                       <div className="col-md-2">
                         <input
                           type="number"
@@ -307,7 +359,6 @@ const ViewDraftQuotations = () => {
                           }}
                         />
                       </div>
-
                       <div className="col-md-2">
                         <button
                           className="btn btn-danger"

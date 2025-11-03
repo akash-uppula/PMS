@@ -1,12 +1,13 @@
-// src/pages/ViewFinalizedQuotations.jsx
 import React, { useState, useEffect } from "react";
 import api from "../api/axiosInstance";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ViewFinalizedQuotations = () => {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [paymentMethods, setPaymentMethods] = useState([
+  const [paymentMethods] = useState([
     "Cash on Delivery",
     "Credit Card",
     "Debit Card",
@@ -23,7 +24,7 @@ const ViewFinalizedQuotations = () => {
 
   useEffect(() => {
     if (message) {
-      const timer = setTimeout(() => setMessage(""), 2000);
+      const timer = setTimeout(() => setMessage(""), 3000);
       return () => clearTimeout(timer);
     }
   }, [message]);
@@ -41,35 +42,107 @@ const ViewFinalizedQuotations = () => {
     }
   };
 
+  const generatePDF = (quotation, paymentMethod) => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Order Receipt", 14, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Date: ${new Date(quotation.createdAt).toLocaleDateString()}`, 14, 30);
+    doc.text("Company: PMS", 14, 37);
+    doc.text("Email: pms@email.com", 14, 44);
+    doc.text("Phone: +91-7013447197", 14, 51);
+
+    doc.setFontSize(14);
+    doc.text("Customer Details:", 14, 65);
+    doc.setFontSize(12);
+    doc.text(`Name: ${quotation.customer?.name || "N/A"}`, 14, 73);
+    doc.text(`Email: ${quotation.customer?.email || "N/A"}`, 14, 80);
+    doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, 14, 87);
+
+    doc.text(`Payment Method: ${paymentMethod || "N/A"}`, 14, 95);
+
+    const tableBody = (quotation.items || []).map((item, index) => {
+      const name = item.product?.name || "Unknown";
+      const price = item.price || 0;
+      const discount = item.discount || 0;
+      const total = (
+        (price - (price * discount) / 100) *
+        item.quantity
+      ).toFixed(2);
+      return [
+        index + 1,
+        name,
+        `$${price.toFixed(2)}`,
+        `${item.quantity}`,
+        `${discount}%`,
+        `$${total}`,
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 105,
+      head: [["#", "Product", "Price", "Qty", "Discount", "Total"]],
+      body: tableBody,
+      theme: "striped",
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      styles: { halign: "center" },
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 10;
+
+    doc.setFontSize(13);
+    doc.text(`Tax Rate: ${quotation.taxRate || 0}%`, 14, finalY);
+    doc.text(`Shipping Fee: $${quotation.shippingFee || 0}`, 14, finalY + 8);
+    doc.text(`Other Charges: $${quotation.otherCharges || 0}`, 14, finalY + 16);
+    doc.setFontSize(14);
+    doc.text(`Grand Total: $${quotation.grandTotal?.toFixed(2) || 0}`, 14, finalY + 26);
+
+    doc.setFontSize(11);
+    doc.text("Thank you for your business!", 14, finalY + 40);
+
+    doc.save(
+      `Order Receipt_${quotation.customer?.name || "Customer"}_${Date.now()}.pdf`
+    );
+  };
+
   const handleConvertToOrder = async (quotationId) => {
     try {
-      const paymentMethod = selectedPayments[quotationId] || "Cash on Delivery";
+      const paymentMethod = selectedPayments[quotationId];
+      if (!paymentMethod) {
+        setMessage("⚠️ Please select a payment method before converting.");
+        return;
+      }
+
       await api.post(`/employee/quotations/convert-to-order/${quotationId}`, {
         paymentMethod,
       });
-      setMessage("✅ Quotation converted to order successfully!");
+
+      const quotation = quotations.find((q) => q._id === quotationId);
+
+      generatePDF(quotation, paymentMethod);
+
+      setMessage("✅ Quotation converted to order and PDF generated!");
       fetchFinalizedQuotations();
     } catch (err) {
       console.error(err);
-      setMessage(
-        err.response?.data?.message || "❌ Failed to convert to order."
-      );
+      setMessage(err.response?.data?.message || "❌ Failed to convert to order.");
     }
   };
 
   if (loading) return <p className="text-center mt-4">Loading quotations...</p>;
+
   if (quotations.length === 0)
     return (
       <div className="container py-4 d-flex flex-column align-items-center">
         <h2 className="mb-4 text-center">Finalized Quotations</h2>
-        <div className="text-center" style={{ maxWidth: "600px" }}>
-          <p className="text-secondary fs-6">
-            You don’t have any finalized quotations yet.
-            <br />
-            Once a quotation is finalized, it will appear here so you can track
-            and manage it easily.
-          </p>
-        </div>
+        <p className="text-secondary text-center" style={{ maxWidth: "600px" }}>
+          You don’t have any finalized quotations yet.
+          <br />
+          Once a quotation is finalized, it will appear here for easy tracking,
+          downloading, and order conversion.
+        </p>
       </div>
     );
 
@@ -86,14 +159,18 @@ const ViewFinalizedQuotations = () => {
                 <h5 className="card-title">{q.customer?.name}</h5>
                 {q.customer?.email && <p>📧 {q.customer.email}</p>}
                 {q.customer?.phone && <p>📞 {q.customer.phone}</p>}
-                <p className="fw-bold">
-                  Grand Total: ${q.grandTotal?.toFixed(2)}
-                </p>
-                <p>
-                  <span className="badge bg-primary">{q.status}</span>
+
+                <p className="mb-1"><strong>Tax Rate:</strong> {q.taxRate || 0}%</p>
+                <p className="mb-1"><strong>Shipping Fee:</strong> ${q.shippingFee || 0}</p>
+                <p className="mb-1"><strong>Other Charges:</strong> ${q.otherCharges || 0}</p>
+                <p className="fw-bold fs-6">
+                  Grand Total: ${q.grandTotal?.toFixed(2) || 0}
                 </p>
 
-                {/* Payment Method Selector */}
+                <p>
+                  <span className="badge bg-success">{q.status}</span>
+                </p>
+
                 <div className="mb-2">
                   <label className="form-label">Payment Method:</label>
                   <select
@@ -119,9 +196,9 @@ const ViewFinalizedQuotations = () => {
                   <button
                     className="btn btn-success flex-grow-1"
                     onClick={() => handleConvertToOrder(q._id)}
-                    disabled={!selectedPayments[q._id]} // prevent conversion without selection
+                    disabled={!selectedPayments[q._id]}
                   >
-                    Convert to Order
+                    Place Order & Generate PDF
                   </button>
                 </div>
               </div>

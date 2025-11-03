@@ -102,15 +102,18 @@ const ManagerSalary = () => {
     if (!salaryData) return;
 
     const doc = new jsPDF();
-    const title = "Manager Salary Slip";
+    const title = "Manager Pay Slip";
 
     doc.setFontSize(16);
     doc.text(title, 14, 20);
     doc.setFontSize(11);
     doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 30);
+    doc.text("Company: PMS", 14, 37);
+    doc.text("Email: pms@email.com", 14, 44);
+    doc.text("Phone: +91-7013447197", 14, 51);
 
     autoTable(doc, {
-      startY: 40,
+      startY: 65,
       head: [["Field", "Details"]],
       body: [
         ["Manager", salaryData.manager],

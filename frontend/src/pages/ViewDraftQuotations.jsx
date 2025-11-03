@@ -138,7 +138,7 @@ const ViewDraftQuotations = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(18);
-    doc.text("Quotation Document", 14, 20);
+    doc.text("Quotation", 14, 20);
 
     doc.setFontSize(12);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);

@@ -146,16 +146,28 @@ const ViewDraftQuotations = () => {
 
     doc.setFontSize(11);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text("Company: PMS", 14, 37);
-    doc.text("Email: pms@email.com", 14, 44);
-    doc.text("Phone: +91-7013447197", 14, 51);
 
-    doc.setFontSize(14);
-    doc.text("Customer Details:", 14, 65);
+    const leftX = 14;
+    const rightX = pageWidth / 2 + 50;
+    let currentY = 40;
+
+    doc.setFontSize(13);
+    doc.text("Customer Details:", leftX, currentY);
+    doc.text("Company Details:", rightX, currentY);
+    currentY += 7;
+
     doc.setFontSize(11);
-    doc.text(`Name: ${quotation.customer?.name || "N/A"}`, 14, 73);
-    doc.text(`Email: ${quotation.customer?.email || "N/A"}`, 14, 80);
-    doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, 14, 87);
+    doc.text(`Name: ${quotation.customer?.name || "N/A"}`, leftX, currentY);
+    doc.text("Company: PMS", rightX, currentY);
+    currentY += 7;
+
+    doc.text(`Email: ${quotation.customer?.email || "N/A"}`, leftX, currentY);
+    doc.text("Email: pms@email.com", rightX, currentY);
+    currentY += 7;
+
+    doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, leftX, currentY);
+    doc.text("Phone: +91-7013447197", rightX, currentY);
+    currentY += 20;
 
     const tableBody = (quotation.items || []).map((item, index) => {
       const product =
@@ -163,10 +175,14 @@ const ViewDraftQuotations = () => {
           ? item.product
           : products.find((p) => p._id === item.product);
       const price = product?.price || 0;
-      const discount = Math.min(item.discount || 0, product?.maxDiscount || 100);
-      const total = ((price - (price * discount) / 100) * item.quantity).toFixed(
-        2
+      const discount = Math.min(
+        item.discount || 0,
+        product?.maxDiscount || 100
       );
+      const total = (
+        (price - (price * discount) / 100) *
+        item.quantity
+      ).toFixed(2);
       return [
         index + 1,
         product?.name || "Unknown",
@@ -178,7 +194,7 @@ const ViewDraftQuotations = () => {
     });
 
     autoTable(doc, {
-      startY: 100,
+      startY: currentY,
       head: [["#", "Product", "Price", "Qty", "Discount", "Total"]],
       body: tableBody,
       theme: "striped",
@@ -192,11 +208,12 @@ const ViewDraftQuotations = () => {
 
     doc.setFontSize(12);
     doc.text(`Grand Total: $${grandTotal}`, 14, finalY);
-
     doc.setFontSize(11);
     doc.text("Thank you for your business!", 14, finalY + 15);
 
-    doc.save(`Quotation_${quotation.customer?.name || "Customer"}_${Date.now()}.pdf`);
+    doc.save(
+      `Quotation_${quotation.customer?.name || "Customer"}_${Date.now()}.pdf`
+    );
   };
 
   if (loading)
@@ -224,7 +241,9 @@ const ViewDraftQuotations = () => {
                 <h5 className="card-title">{q.customer?.name}</h5>
                 {q.customer?.email && <p>📧 {q.customer.email}</p>}
                 {q.customer?.phone && <p>📞 {q.customer.phone}</p>}
-                <p className="fw-bold">Total: ${q.totalAmount?.toFixed(2) || 0}</p>
+                <p className="fw-bold">
+                  Total: ${q.totalAmount?.toFixed(2) || 0}
+                </p>
                 <span className="badge bg-secondary">{q.status}</span>
 
                 <div className="d-flex gap-2 mt-3">

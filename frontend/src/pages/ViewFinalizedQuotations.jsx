@@ -43,73 +43,92 @@ const ViewFinalizedQuotations = () => {
   };
 
   const generatePDF = (quotation, paymentMethod) => {
-    const doc = new jsPDF();
+  const doc = new jsPDF();
 
-    doc.setFontSize(16);
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const title = "Order Receipt";
-    const textWidth = doc.getTextWidth(title);
-    const x = (pageWidth - textWidth) / 2;
-    doc.text(title, x, 20);
+  doc.setFontSize(16);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const title = "Order Receipt";
+  const textWidth = doc.getTextWidth(title);
+  const x = (pageWidth - textWidth) / 2;
+  doc.text(title, x, 20);
 
-    doc.setFontSize(11);
-    doc.text(`Date: ${new Date(quotation.createdAt).toLocaleDateString()}`, 14, 30);
-    doc.text("Company: PMS", 14, 37);
-    doc.text("Email: pms@email.com", 14, 44);
-    doc.text("Phone: +91-7013447197", 14, 51);
+  doc.setFontSize(11);
+  doc.text(`Date: ${new Date(quotation.createdAt).toLocaleDateString()}`, 14, 30);
 
-    doc.setFontSize(14);
-    doc.text("Customer Details:", 14, 65);
-    doc.setFontSize(11);
-    doc.text(`Name: ${quotation.customer?.name || "N/A"}`, 14, 73);
-    doc.text(`Email: ${quotation.customer?.email || "N/A"}`, 14, 80);
-    doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, 14, 87);
+  const leftX = 14;
+  const rightX = pageWidth / 2 + 50;
+  let currentY = 40;
 
-    doc.text(`Payment Method: ${paymentMethod || "N/A"}`, 14, 95);
+  doc.setFontSize(13);
+  doc.text("Customer Details:", leftX, currentY);
+  doc.text("Company Details:", rightX, currentY);
+  currentY += 7;
 
-    const tableBody = (quotation.items || []).map((item, index) => {
-      const name = item.product?.name || "Unknown";
-      const price = item.price || 0;
-      const discount = item.discount || 0;
-      const total = (
-        (price - (price * discount) / 100) *
-        item.quantity
-      ).toFixed(2);
-      return [
-        index + 1,
-        name,
-        `$${price.toFixed(2)}`,
-        `${item.quantity}`,
-        `${discount}%`,
-        `$${total}`,
-      ];
-    });
+  doc.setFontSize(11);
+  doc.text(`Name: ${quotation.customer?.name || "N/A"}`, leftX, currentY);
+  doc.text("Company: PMS", rightX, currentY);
+  currentY += 7;
 
-    autoTable(doc, {
-      startY: 105,
-      head: [["#", "Product", "Price", "Qty", "Discount", "Total"]],
-      body: tableBody,
-      theme: "striped",
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      styles: { halign: "center" },
-    });
+  doc.text(`Email: ${quotation.customer?.email || "N/A"}`, leftX, currentY);
+  doc.text("Email: pms@email.com", rightX, currentY);
+  currentY += 7;
 
-    const finalY = doc.lastAutoTable.finalY + 10;
+  doc.text(`Phone: ${quotation.customer?.phone || "N/A"}`, leftX, currentY);
+  doc.text("Phone: +91-7013447197", rightX, currentY);
+  currentY += 10;
 
-    doc.setFontSize(11);
-    doc.text(`Tax Rate: ${quotation.taxRate || 0}%`, 14, finalY);
-    doc.text(`Shipping Fee: $${quotation.shippingFee || 0}`, 14, finalY + 8);
-    doc.text(`Other Charges: $${quotation.otherCharges || 0}`, 14, finalY + 16);
-    doc.setFontSize(12);
-    doc.text(`Grand Total: $${quotation.grandTotal?.toFixed(2) || 0}`, 14, finalY + 26);
+  doc.setFontSize(12);
+  doc.text(`Payment Method: ${paymentMethod || "N/A"}`, leftX, currentY);
+  currentY += 15;
 
-    doc.setFontSize(11);
-    doc.text("Thank you for your business!", 14, finalY + 40);
+  const tableBody = (quotation.items || []).map((item, index) => {
+    const name = item.product?.name || "Unknown";
+    const price = item.price || 0;
+    const discount = item.discount || 0;
+    const total = (
+      (price - (price * discount) / 100) * item.quantity
+    ).toFixed(2);
+    return [
+      index + 1,
+      name,
+      `$${price.toFixed(2)}`,
+      `${item.quantity}`,
+      `${discount}%`,
+      `$${total}`,
+    ];
+  });
 
-    doc.save(
-      `Order Receipt_${quotation.customer?.name || "Customer"}_${Date.now()}.pdf`
-    );
-  };
+  autoTable(doc, {
+    startY: currentY,
+    head: [["#", "Product", "Price", "Qty", "Discount", "Total"]],
+    body: tableBody,
+    theme: "striped",
+    headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+    styles: { halign: "center" },
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 10;
+
+  doc.setFontSize(11);
+  doc.text(`Tax Rate: ${quotation.taxRate || 0}%`, 14, finalY);
+  doc.text(`Shipping Fee: $${quotation.shippingFee || 0}`, 14, finalY + 8);
+  doc.text(`Other Charges: $${quotation.otherCharges || 0}`, 14, finalY + 16);
+
+  doc.setFontSize(12);
+  doc.text(
+    `Grand Total: $${quotation.grandTotal?.toFixed(2) || 0}`,
+    14,
+    finalY + 26
+  );
+
+  doc.setFontSize(11);
+  doc.text("Thank you for your business!", 14, finalY + 40);
+
+  doc.save(
+    `Order_Receipt_${quotation.customer?.name || "Customer"}_${Date.now()}.pdf`
+  );
+};
+
 
   const handleConvertToOrder = async (quotationId) => {
     try {

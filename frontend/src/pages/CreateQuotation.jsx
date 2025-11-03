@@ -72,67 +72,76 @@ const CreateQuotation = () => {
     );
 
   const generatePDF = () => {
-    const doc = new jsPDF();
+  const doc = new jsPDF();
 
-    doc.setFontSize(16);
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const title = "Quotation";
-    const textWidth = doc.getTextWidth(title);
-    const x = (pageWidth - textWidth) / 2;
-    doc.text(title, x, 20);
+  doc.setFontSize(16);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const title = "Quotation";
+  const textWidth = doc.getTextWidth(title);
+  const x = (pageWidth - textWidth) / 2;
+  doc.text(title, x, 20);
 
-    doc.setFontSize(11);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text("Company: PMS", 14, 37);
-    doc.text("Email: pms@email.com", 14, 44);
-    doc.text("Phone: +91-7013447197", 14, 51);
+  doc.setFontSize(11);
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
 
-    doc.setFontSize(14);
-    doc.text("Customer Details:", 14, 65);
-    doc.setFontSize(11);
-    doc.text(`Name: ${customer.name}`, 14, 73);
-    doc.text(`Email: ${customer.email || "N/A"}`, 14, 80);
-    doc.text(`Phone: ${customer.phone || "N/A"}`, 14, 87);
+  const leftX = 14;
+  const rightX = pageWidth / 2 + 50;
+  let currentY = 40;
 
-    const tableBody = items.map((item, index) => {
-      const product = products.find((p) => p._id === item.product);
-      const price = product?.price || 0;
-      const discount = Math.min(item.discount || 0, product?.maxDiscount || 100);
-      const total = ((price - (price * discount) / 100) * item.quantity).toFixed(2);
-      return [
-        index + 1,
-        product?.name || "Unknown",
-        `$${price}`,
-        `${item.quantity}`,
-        `${discount}%`,
-        `$${total}`,
-      ];
-    });
+  doc.setFontSize(13);
+  doc.text("Customer Details:", leftX, currentY);
+  doc.text("Company Details:", rightX, currentY);
+  currentY += 7;
 
-    autoTable(doc, {
-      startY: 100,
-      head: [["#", "Product", "Price", "Qty", "Discount", "Total"]],
-      body: tableBody,
-      theme: "striped",
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      styles: { halign: "center" },
-    });
+  doc.setFontSize(11);
+  doc.text(`Name: ${customer.name || "N/A"}`, leftX, currentY);
+  doc.text("Company: PMS", rightX, currentY);
+  currentY += 7;
 
-    const finalY = doc.lastAutoTable.finalY + 10;
-    const grandTotal = calculateTotal();
+  doc.text(`Email: ${customer.email || "N/A"}`, leftX, currentY);
+  doc.text("Email: pms@email.com", rightX, currentY);
+  currentY += 7;
 
-    doc.setFontSize(12);
-    doc.text(`Grand Total: $${grandTotal}`, 14, finalY);
+  doc.text(`Phone: ${customer.phone || "N/A"}`, leftX, currentY);
+  doc.text("Phone: +91-7013447197", rightX, currentY);
+  currentY += 20;
 
-    doc.setFontSize(11);
-    doc.text(
-      "Thank you for your business!",
-      14,
-      finalY + 15
-    );
+  const tableBody = items.map((item, index) => {
+    const product = products.find((p) => p._id === item.product);
+    const price = product?.price || 0;
+    const discount = Math.min(item.discount || 0, product?.maxDiscount || 100);
+    const total = ((price - (price * discount) / 100) * item.quantity).toFixed(2);
+    return [
+      index + 1,
+      product?.name || "Unknown",
+      `$${price}`,
+      `${item.quantity}`,
+      `${discount}%`,
+      `$${total}`,
+    ];
+  });
 
-    doc.save(`Quotation_${customer.name || "Customer"}_${Date.now()}.pdf`);
-  };
+  autoTable(doc, {
+    startY: currentY,
+    head: [["#", "Product", "Price", "Qty", "Discount", "Total"]],
+    body: tableBody,
+    theme: "striped",
+    headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+    styles: { halign: "center" },
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 10;
+  const grandTotal = calculateTotal();
+
+  doc.setFontSize(12);
+  doc.text(`Grand Total: $${grandTotal}`, 14, finalY);
+
+  doc.setFontSize(11);
+  doc.text("Thank you for your business!", 14, finalY + 15);
+
+  doc.save(`Quotation_${customer.name || "Customer"}_${Date.now()}.pdf`);
+};
+
 
   return (
     <div className="container py-4">

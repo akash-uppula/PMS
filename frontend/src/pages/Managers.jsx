@@ -140,7 +140,6 @@ const Managers = () => {
 
   // Delete Manager
   const deleteManager = async (_id) => {
-    if (!window.confirm("Are you sure you want to delete this manager?")) return;
     try {
       await api.delete(`/organization-admin/managers/${_id}`);
       setManagers((prev) => prev.filter((m) => m._id !== _id));

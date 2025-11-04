@@ -13,7 +13,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email, role });
     if (!user) {
       return res.status(404).json({
         status: "fail",

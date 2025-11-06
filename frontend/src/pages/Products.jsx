@@ -226,6 +226,7 @@ const Products = () => {
                   <p className="card-text small">
                     <strong>Price:</strong> ${p.price} <br />
                     <strong>Stock:</strong> {p.stock} <br />
+                    <strong>Total Stock:</strong> {p.totalStock || 0} <br />
                     <strong>Max Discount:</strong> {p.maxDiscount || 0}% <br />
                     {p.description && <span>{p.description}</span>}
                   </p>

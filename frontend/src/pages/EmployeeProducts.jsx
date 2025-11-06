@@ -1,4 +1,3 @@
-// src/components/EmployeeProducts.jsx
 import React, { useState, useEffect } from "react";
 import api from "../api/axiosInstance";
 
@@ -7,7 +6,6 @@ const EmployeeProducts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // fetch products on mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -29,6 +27,7 @@ const EmployeeProducts = () => {
   return (
     <div className="container py-4">
       <h2 className="text-center mb-4">Available Products</h2>
+
       {products.length === 0 ? (
         <p className="text-center text-muted">No products available</p>
       ) : (
@@ -62,10 +61,20 @@ const EmployeeProducts = () => {
                     />
                   </div>
                 )}
+
                 <div className="card-body">
-                  <h5 className="card-title">{product.name}</h5>
+                  <h5 className="card-title fw-semibold">{product.name}</h5>
                   <p className="card-text text-muted">{product.description}</p>
-                  <p className="fw-bold">₹{product.price}</p>
+
+                  <p className="fw-bold mb-1">₹{product.price}</p>
+
+                  <p className="mb-1">
+                    <strong>Available Stock:</strong>{" "}
+                    <span className="text-success">
+                      {product.stock ?? 0}
+                    </span>
+                  </p>
+
                   {product.category && (
                     <p className="text-primary mb-0">
                       Category: {product.category.name || product.category}

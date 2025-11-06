@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import HostAdminDashboard from "./pages/HostAdminDashboard";
+import HostAdmin from "./pages/HostAdmin";
 import HostAdminRevenueReport from "./pages/HostAdminRevenueReport";
 import OrganizationAdmins from "./pages/OrganizationAdmins";
 import OrganizationAdminDashboard from "./pages/OrganizationAdminDashboard";
@@ -66,7 +67,7 @@ const App = () => {
             />
             <Route
               path="/host-admin/settings"
-              element={<div>Platform Settings Page</div>}
+              element={<HostAdmin/>}
             />
           </Route>
 

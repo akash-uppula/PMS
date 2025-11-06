@@ -1,11 +1,26 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import api from "../api/axiosInstance";
 import "./Navbar.css";
 
 const Navbar = () => {
   const { user, role, logout, loading } = useContext(AuthContext);
+  const [hostAdminExists, setHostAdminExists] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkHostAdmin = async () => {
+      try {
+        const res = await api.get("/host-admin/exists");
+        setHostAdminExists(res.data.exists);
+      } catch (error) {
+        console.error("Failed to check host admin existence:", error);
+        setHostAdminExists(true);
+      }
+    };
+    checkHostAdmin();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -26,12 +41,9 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
       <div className="container">
-        {/* Brand */}
         <NavLink className="navbar-brand fw-bold text-primary" to="/">
           PMS
         </NavLink>
-
-        {/* Mobile toggle */}
         <button
           className="navbar-toggler"
           type="button"
@@ -44,7 +56,6 @@ const Navbar = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Nav Links */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto align-items-center fw-semibold">
             <li className="nav-item">
@@ -77,11 +88,14 @@ const Navbar = () => {
                       Login
                     </NavLink>
                   </li>
-                  <li className="nav-item">
-                    <NavLink to="/register" className="nav-link">
-                      Register
-                    </NavLink>
-                  </li>
+                  
+                  {!hostAdminExists && (
+                    <li className="nav-item">
+                      <NavLink to="/register" className="nav-link">
+                        Register
+                      </NavLink>
+                    </li>
+                  )}
                 </>
               ))}
           </ul>

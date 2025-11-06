@@ -12,9 +12,14 @@ import "./Home.css";
 
 const Home = () => {
   const handleScroll = (e) => {
-    e.preventDefault();
-    document.getElementById("features").scrollIntoView({ behavior: "smooth" });
-  };
+  e.preventDefault();
+  const target = document.getElementById("features");
+  if (!target) return;
+  const yOffset = -80;
+  const y =
+    target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+  window.scrollTo({ top: y, behavior: "smooth" });
+};
 
   const features = [
     {
@@ -128,7 +133,7 @@ const Home = () => {
           <p className="mb-4">
             Sign up today and streamline your product management effortlessly.
           </p>
-          <Link to="/register" className="btn btn-light px-4 py-2 fw-semibold">
+          <Link to="/login" className="btn btn-light px-4 py-2 fw-semibold">
             Get Started
           </Link>
         </div>

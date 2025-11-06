@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axiosInstance";
 
-const OrganizationAdmins = () => {
+const HostAdmin = () => {
   const [admins, setAdmins] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState({ msg: "", type: "" });
@@ -30,28 +30,16 @@ const OrganizationAdmins = () => {
   useEffect(() => {
     const fetchAdmins = async () => {
       try {
-        const res = await api.get("/host-admin/organization-admins");
+        const res = await api.get("/host-admin/hostAdmins");
         setAdmins(res.data.data || []);
       } catch {
-        triggerNotification("Failed to load admins.", "danger");
+        triggerNotification("Failed to load Host Admins.", "danger");
       } finally {
         setIsLoading(false);
       }
     };
     fetchAdmins();
   }, []);
-
-  const openCreateModal = () => {
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      showPassword: false,
-    });
-    setFormError("");
-    setModalState({ show: true, mode: "create", admin: null });
-  };
 
   const openEditModal = (admin) => {
     setFormData({
@@ -65,8 +53,7 @@ const OrganizationAdmins = () => {
     setModalState({ show: true, mode: "edit", admin });
   };
 
-  const closeModal = () =>
-    setModalState({ show: false, mode: "", admin: null });
+  const closeModal = () => setModalState({ show: false, mode: "", admin: null });
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -76,10 +63,6 @@ const OrganizationAdmins = () => {
 
     if (!firstName || !lastName || !email) {
       setFormError("First Name, Last Name, and Email are required.");
-      return;
-    }
-    if (modalState.mode === "create" && !password) {
-      setFormError("Password is required.");
       return;
     }
     if (password && password.length < 8) {
@@ -96,26 +79,14 @@ const OrganizationAdmins = () => {
     setIsSubmitting(true);
 
     try {
-      if (modalState.mode === "create") {
-        const res = await api.post("/host-admin/organization-admins", payload);
-        setAdmins((prev) => [...prev, res.data.data]);
-        triggerNotification(
-          "Organization Admin created successfully!",
-          "success"
-        );
-      } else {
-        const res = await api.put(
-          `/host-admin/organization-admins/${modalState.admin._id}`,
-          payload
-        );
-        setAdmins((prev) =>
-          prev.map((a) => (a._id === modalState.admin._id ? res.data.data : a))
-        );
-        triggerNotification(
-          "Organization Admin updated successfully!",
-          "success"
-        );
-      }
+      const res = await api.put(
+        `/host-admin/update/${modalState.admin._id}`,
+        payload
+      );
+      setAdmins((prev) =>
+        prev.map((a) => (a._id === modalState.admin._id ? res.data.data : a))
+      );
+      triggerNotification("Host Admin updated successfully!", "success");
       closeModal();
     } catch (err) {
       setFormError(err.response?.data?.message || "Operation failed.");
@@ -124,29 +95,13 @@ const OrganizationAdmins = () => {
     }
   };
 
-  const toggleAdminStatus = async (_id) => {
-    try {
-      const res = await api.patch(
-        `/host-admin/organization-admins/${_id}/status`
-      );
-      setAdmins((prev) =>
-        prev.map((admin) =>
-          admin._id === _id ? { ...admin, status: res.data.data.status } : admin
-        )
-      );
-      triggerNotification("Status updated!", "primary");
-    } catch {
-      triggerNotification("Failed to update status.", "danger");
-    }
-  };
-
   const deleteAdmin = async (_id) => {
     try {
-      await api.delete(`/host-admin/organization-admins/${_id}`);
+      await api.delete(`/host-admin/delete/${_id}`);
       setAdmins((prev) => prev.filter((admin) => admin._id !== _id));
-      triggerNotification("Organization Admin deleted!", "warning");
+      triggerNotification("Host Admin deleted!", "warning");
     } catch {
-      triggerNotification("Failed to delete admin.", "danger");
+      triggerNotification("Failed to delete Host Admin.", "danger");
     }
   };
 
@@ -170,13 +125,7 @@ const OrganizationAdmins = () => {
       )}
 
       <div className="mb-4 border-bottom p-3">
-        <h3 className="fw-bold mb-3 text-center">Organization Admins</h3>
-        <button
-          className="btn btn-primary btn-sm shadow-sm px-4"
-          onClick={openCreateModal}
-        >
-          + Create Admin
-        </button>
+        <h3 className="fw-bold mb-3 text-center">Host Admin</h3>
       </div>
 
       <div className="card shadow-sm border-0">
@@ -221,16 +170,6 @@ const OrganizationAdmins = () => {
                             Edit
                           </button>
                           <button
-                            className={`btn btn-sm ${
-                              admin.status === "Active"
-                                ? "btn-danger"
-                                : "btn-success"
-                            }`}
-                            onClick={() => toggleAdminStatus(admin._id)}
-                          >
-                            {admin.status === "Active" ? "Disable" : "Activate"}
-                          </button>
-                          <button
                             className="btn btn-sm btn-danger"
                             onClick={() => deleteAdmin(admin._id)}
                           >
@@ -243,9 +182,9 @@ const OrganizationAdmins = () => {
                 ) : (
                   <tr>
                     <td colSpan="5" className="text-center py-5 text-muted">
-                      <div className="fw-semibold">No admins found</div>
+                      <div className="fw-semibold">No Host Admin found</div>
                       <small className="text-secondary">
-                        Click "Create Admin" to add one.
+                        Only one Host Admin is allowed.
                       </small>
                     </td>
                   </tr>
@@ -261,9 +200,7 @@ const OrganizationAdmins = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content shadow-sm border-0">
               <div className="modal-header">
-                <h5 className="modal-title fw-bold">
-                  {modalState.mode === "create" ? "Create Admin" : "Edit Admin"}
-                </h5>
+                <h5 className="modal-title fw-bold">Edit Host Admin</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -292,18 +229,12 @@ const OrganizationAdmins = () => {
                     </div>
                   ))}
                   <div className="mb-3">
-                    <label className="form-label">
-                      {modalState.mode === "edit" ? "New Password" : "Password"}
-                    </label>
+                    <label className="form-label">New Password</label>
                     <div className="input-group">
                       <input
                         type={formData.showPassword ? "text" : "password"}
                         className="form-control"
-                        placeholder={
-                          modalState.mode === "edit"
-                            ? "Leave blank to keep current password"
-                            : "Enter password"
-                        }
+                        placeholder="Leave blank to keep current password"
                         value={formData.password}
                         onChange={(e) =>
                           setFormData({ ...formData, password: e.target.value })
@@ -336,13 +267,7 @@ const OrganizationAdmins = () => {
                       className="btn btn-primary"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting
-                        ? modalState.mode === "create"
-                          ? "Creating..."
-                          : "Updating..."
-                        : modalState.mode === "create"
-                        ? "Create"
-                        : "Update"}
+                      {isSubmitting ? "Updating..." : "Update"}
                     </button>
                   </div>
                 </form>
@@ -355,4 +280,4 @@ const OrganizationAdmins = () => {
   );
 };
 
-export default OrganizationAdmins;
+export default HostAdmin;

@@ -77,7 +77,7 @@ const OrganizationAdminDashboard = () => {
   return (
     <div className="dashboard-wrapper min-vh-100">
       <header className="dashboard-header text-center py-4">
-        <h2 className="fw-bold mb-1">Organization Admin Dashboard</h2>
+        <h2 className="fw-bold mb-1">Organization Administrator Dashboard</h2>
         <p className="text-muted mb-0">
           Manage your organization efficiently ✨
         </p>

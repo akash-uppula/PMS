@@ -221,10 +221,7 @@ const Login = () => {
         </form>
 
         <p className="text-center text-muted mt-4">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-primary text-decoration-none">
-            Register here
-          </Link>
+          Let’s achieve great things today!{" "}
         </p>
       </div>
     </div>

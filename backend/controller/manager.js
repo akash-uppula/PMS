@@ -368,29 +368,7 @@ export const checkTodayManagerAttendance = async (req, res) => {
 export const getOrgAdminManagerSalesReport = async (req, res) => {
   try {
     const orgAdminId = req.user._id;
-    const { startDate, endDate } = req.query;
-
-    const managers = await User.find({
-      role: "manager",
-      organizationAdminId: orgAdminId,
-    }).select("_id firstName lastName");
-
-    const managerIds = managers.map((m) => m._id);
-
-    if (!managerIds.length) {
-      return res.status(200).json({
-        status: "success",
-        data: {
-          managers: [],
-          summary: {
-            totalRevenue: 0,
-            totalOrders: 0,
-            totalDiscount: 0,
-            totalTax: 0,
-          },
-        },
-      });
-    }
+    const { startDate, endDate, range = "monthly" } = req.query;
 
     if (!startDate || !endDate) {
       return res.status(200).json({
@@ -409,8 +387,68 @@ export const getOrgAdminManagerSalesReport = async (req, res) => {
     }
 
     const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
     end.setHours(23, 59, 59, 999);
+
+    const managers = await User.find({
+      role: "manager",
+      organizationAdminId: orgAdminId,
+    }).select("_id firstName lastName");
+
+    const managerIds = managers.map((m) => m._id);
+    if (!managerIds.length) {
+      return res.status(200).json({
+        status: "success",
+        data: {
+          managers: [],
+          summary: {
+            totalRevenue: 0,
+            totalOrders: 0,
+            totalDiscount: 0,
+            totalTax: 0,
+          },
+        },
+      });
+    }
+
+    let groupId = {};
+    switch (range) {
+      case "daily":
+        groupId = {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" },
+        };
+        break;
+      case "weekly":
+        groupId = {
+          year: { $year: "$createdAt" },
+          week: { $week: "$createdAt" },
+        };
+        break;
+      case "monthly":
+        groupId = {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+        };
+        break;
+      case "quarterly":
+        groupId = {
+          year: { $year: "$createdAt" },
+          quarter: { $ceil: { $divide: [{ $month: "$createdAt" }, 3] } },
+        };
+        break;
+      case "yearly":
+        groupId = {
+          year: { $year: "$createdAt" },
+        };
+        break;
+      default:
+        return res
+          .status(400)
+          .json({ status: "fail", message: "Invalid range selected." });
+    }
 
     const orders = await Order.aggregate([
       {
@@ -450,7 +488,10 @@ export const getOrgAdminManagerSalesReport = async (req, res) => {
       },
       {
         $group: {
-          _id: "$employee.managerId",
+          _id: {
+            ...groupId,
+            managerId: "$employee.managerId",
+          },
           totalRevenue: { $sum: "$grandTotal" },
           totalOrders: { $sum: 1 },
           totalDiscount: { $sum: "$totalItemDiscount" },
@@ -458,34 +499,50 @@ export const getOrgAdminManagerSalesReport = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: "users",
+          localField: "_id.managerId",
+          foreignField: "_id",
+          as: "managerDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$managerDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
-          _id: 0,
-          managerId: "$_id",
+          _id: 1,
           totalRevenue: { $round: ["$totalRevenue", 2] },
           totalOrders: 1,
           totalDiscount: { $round: ["$totalDiscount", 2] },
           totalTax: { $round: ["$totalTax", 2] },
+          managerName: {
+            $concat: [
+              "$managerDetails.firstName",
+              " ",
+              "$managerDetails.lastName",
+            ],
+          },
         },
       },
+      {
+        $addFields: {
+          sortDate: {
+            $dateFromParts: {
+              year: "$_id.year",
+              month: { $ifNull: ["$_id.month", 1] },
+              day: { $ifNull: ["$_id.day", 1] },
+            },
+          },
+        },
+      },
+      { $sort: { sortDate: 1 } },
     ]);
 
-    const managerReports = managers
-      .map((m) => {
-        const report = orders.find(
-          (o) => o.managerId?.toString() === m._id.toString()
-        );
-        return {
-          managerId: m._id,
-          managerName: `${m.firstName} ${m.lastName}`,
-          totalRevenue: report ? report.totalRevenue : 0,
-          totalOrders: report ? report.totalOrders : 0,
-          totalDiscount: report ? report.totalDiscount : 0,
-          totalTax: report ? report.totalTax : 0,
-        };
-      })
-      .sort((a, b) => b.totalRevenue - a.totalRevenue);
-
-    const summary = managerReports.reduce(
+    const summary = orders.reduce(
       (acc, curr) => {
         acc.totalRevenue += curr.totalRevenue;
         acc.totalOrders += curr.totalOrders;
@@ -498,7 +555,10 @@ export const getOrgAdminManagerSalesReport = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: { managers: managerReports, summary },
+      filterRange: { start, end },
+      groupType: range,
+      data: orders,
+      summary,
     });
   } catch (err) {
     console.error("❌ Error fetching org admin manager sales report:", err.message);

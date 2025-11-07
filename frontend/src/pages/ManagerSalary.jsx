@@ -152,7 +152,7 @@ const ManagerSalary = () => {
       )}
 
       <h2 className="fw-bold text-center mb-4" style={{ color: "#000" }}>
-        👨‍💼 Calculate Manager Salary by Attendance
+        👨‍💼 Manager Salary Reports
       </h2>
 
       <div

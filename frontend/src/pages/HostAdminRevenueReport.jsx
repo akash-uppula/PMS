@@ -191,7 +191,7 @@ const HostAdminRevenueReport = () => {
           <div className="row mb-4">
             {[
               {
-                title: "Total Revenue (₹)",
+                title: "Total Revenue ($)",
                 value: safeNumber(summary.totalRevenue),
                 icon: <FaMoneyBillWave size={22} />,
                 bg: "bg-success",
@@ -209,7 +209,7 @@ const HostAdminRevenueReport = () => {
                 bg: "bg-info",
               },
               {
-                title: "Total Tax (₹)",
+                title: "Total Tax ($)",
                 value: safeNumber(summary.totalTax),
                 icon: <FaChartLine size={22} />,
                 bg: "bg-warning",
@@ -243,13 +243,13 @@ const HostAdminRevenueReport = () => {
                     <YAxis />
                     <Tooltip
                       formatter={(value, name) => [
-                        `₹${safeNumber(value)}`,
+                        `$${safeNumber(value)}`,
                         name === "revenue" ? "Revenue" : "Tax",
                       ]}
                     />
                     <Legend />
-                    <Bar dataKey="revenue" fill="#0d6efd" name="Revenue (₹)" />
-                    <Bar dataKey="tax" fill="#ffc107" name="Tax (₹)" />
+                    <Bar dataKey="revenue" fill="#0d6efd" name="Revenue ($)" />
+                    <Bar dataKey="tax" fill="#ffc107" name="Tax ($)" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -269,9 +269,9 @@ const HostAdminRevenueReport = () => {
                     <tr>
                       <th>Organization Admin</th>
                       <th>Period</th>
-                      <th>Total Revenue (₹)</th>
+                      <th>Total Revenue ($)</th>
                       <th>Total Orders</th>
-                      <th>Total Tax (₹)</th>
+                      <th>Total Tax ($)</th>
                     </tr>
                   </thead>
                   <tbody>

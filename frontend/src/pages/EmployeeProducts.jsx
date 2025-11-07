@@ -66,7 +66,7 @@ const EmployeeProducts = () => {
                   <h5 className="card-title fw-semibold">{product.name}</h5>
                   <p className="card-text text-muted">{product.description}</p>
 
-                  <p className="fw-bold mb-1">₹{product.price}</p>
+                  <p className="fw-bold mb-1">${product.price}</p>
 
                   <p className="mb-1">
                     <strong>Available Stock:</strong>{" "}

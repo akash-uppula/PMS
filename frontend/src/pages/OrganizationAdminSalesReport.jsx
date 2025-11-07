@@ -67,7 +67,7 @@ const OrganizationAdminSalesReport = () => {
       )}
 
       <div className="d-flex justify-content-between align-items-center py-3 flex-wrap">
-        <h3 className="fw-bold mb-0">Organization Admin Sales Report</h3>
+        <h3 className="fw-bold mb-0">Financial Reports</h3>
         <form
           className="d-flex gap-2 flex-wrap"
           onSubmit={handleFilterSubmit}
@@ -119,7 +119,7 @@ const OrganizationAdminSalesReport = () => {
           <div className="row mb-4">
             {[
               {
-                title: "Total Revenue (₹)",
+                title: "Total Revenue ($)",
                 value: summary.totalRevenue,
                 icon: <FaDollarSign size={24} />,
                 bg: "bg-success",
@@ -166,7 +166,7 @@ const OrganizationAdminSalesReport = () => {
                       <th>Product Name</th>
                       <th>Time Period</th>
                       <th>Quantity Sold</th>
-                      <th>Total Revenue (₹)</th>
+                      <th>Total Revenue ($)</th>
                       <th>Orders Count</th>
                     </tr>
                   </thead>

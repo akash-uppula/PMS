@@ -134,7 +134,7 @@ const OrganizationAdminManagerSales = () => {
           <div className="row mb-4">
             {[
               {
-                title: "Total Revenue (₹)",
+                title: "Total Revenue ($)",
                 value: summary.totalRevenue,
                 icon: <FaDollarSign size={24} />,
                 bg: "bg-success",
@@ -146,13 +146,13 @@ const OrganizationAdminManagerSales = () => {
                 bg: "bg-primary",
               },
               {
-                title: "Total Discount (₹)",
+                title: "Total Discount ($)",
                 value: summary.totalDiscount,
                 icon: <FaPercent size={24} />,
                 bg: "bg-warning",
               },
               {
-                title: "Total Tax (₹)",
+                title: "Total Tax ($)",
                 value: summary.totalTax,
                 icon: <FaUsers size={24} />,
                 bg: "bg-info",
@@ -186,10 +186,10 @@ const OrganizationAdminManagerSales = () => {
                     <tr>
                       <th>Time Period</th>
                       <th>Manager Name</th>
-                      <th>Total Revenue (₹)</th>
+                      <th>Total Revenue ($)</th>
                       <th>Total Orders</th>
-                      <th>Total Discount (₹)</th>
-                      <th>Total Tax (₹)</th>
+                      <th>Total Discount ($)</th>
+                      <th>Total Tax ($)</th>
                     </tr>
                   </thead>
                   <tbody>

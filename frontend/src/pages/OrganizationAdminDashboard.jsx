@@ -47,7 +47,7 @@ const sections = [
   },
   {
     id: "orgadmin-pl-report",
-    title: "Profit & Loss Report",
+    title: "Profit & Loss Reports",
     description: "View P&L reports",
     emoji: "💰",
     path: "/organization-admin/pl-report",

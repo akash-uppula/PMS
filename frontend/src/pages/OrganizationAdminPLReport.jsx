@@ -71,7 +71,7 @@ const OrganizationAdminPLReport = () => {
       )}
 
       <div className="d-flex justify-content-between align-items-center py-3 flex-wrap">
-        <h3 className="fw-bold mb-0">Organization Admin P&L Report</h3>
+        <h3 className="fw-bold mb-0">P&L Reports</h3>
         <form
           className="d-flex gap-2 flex-wrap"
           onSubmit={handleFilterSubmit}
@@ -116,37 +116,37 @@ const OrganizationAdminPLReport = () => {
           <div className="row row-cols-1 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
             {[
               {
-                title: "Total Revenue (₹)",
+                title: "Total Revenue ($)",
                 value: summary.totalRevenue,
                 icon: <FaDollarSign size={24} />,
                 bg: "bg-success",
               },
               {
-                title: "Total Cost (₹)",
+                title: "Total Cost ($)",
                 value: summary.totalCost,
                 icon: <FaMoneyBillWave size={24} />,
                 bg: "bg-primary",
               },
               {
-                title: "Profit (₹)",
+                title: "Profit ($)",
                 value: summary.profit,
                 icon: <FaBalanceScale size={24} />,
                 bg: "bg-success",
               },
               {
-                title: "Loss (₹)",
+                title: "Loss ($)",
                 value: summary.loss,
                 icon: <FaBalanceScale size={24} />,
                 bg: "bg-danger",
               },
               {
-                title: "GST (₹)",
+                title: "GST ($)",
                 value: summary.totalGST,
                 icon: <FaPercentage size={24} />,
                 bg: "bg-info",
               },
               {
-                title: "Non-GST Revenue (₹)",
+                title: "Non-GST Revenue ($)",
                 value: summary.nonGSTRevenue,
                 icon: <FaDollarSign size={24} />,
                 bg: "bg-warning",
@@ -175,12 +175,12 @@ const OrganizationAdminPLReport = () => {
                   <thead className="table-light">
                     <tr>
                       <th>Period</th>
-                      <th>Revenue (₹)</th>
-                      <th>Cost (₹)</th>
-                      <th>Profit (₹)</th>
-                      <th>Loss (₹)</th>
-                      <th>GST (₹)</th>
-                      <th>Non-GST Revenue (₹)</th>
+                      <th>Revenue ($)</th>
+                      <th>Cost ($)</th>
+                      <th>Profit ($)</th>
+                      <th>Loss ($)</th>
+                      <th>GST ($)</th>
+                      <th>Non-GST Revenue ($)</th>
                     </tr>
                   </thead>
                   <tbody>

@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import HostAdminLogin from "./pages/HostAdminLogin";
 import Register from "./pages/Register";
 import HostAdminDashboard from "./pages/HostAdminDashboard";
 import HostAdmin from "./pages/HostAdmin";
@@ -46,6 +47,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/host-admin/login" element={<HostAdminLogin />} />
           <Route path="/register" element={<Register />} />
 
           <Route element={<ProtectedRoute allowedRoles={["host-admin"]} />}>

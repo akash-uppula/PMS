@@ -30,7 +30,6 @@ const Login = () => {
 
   const redirectToDashboard = (role) => {
     const routes = {
-      "host-admin": "/host-admin/dashboard",
       "organization-admin": "/organization-admin/dashboard",
       manager: "/manager/dashboard",
       employee: "/employee/dashboard",
@@ -199,7 +198,6 @@ const Login = () => {
               <option value="" disabled>
                 Select your role
               </option>
-              <option value="host-admin">Host Administrator</option>
               <option value="organization-admin">
                 Organization Administrator
               </option>

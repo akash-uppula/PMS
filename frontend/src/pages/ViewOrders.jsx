@@ -1,12 +1,15 @@
-// src/pages/ViewOrders.jsx
 import React, { useState, useEffect } from "react";
 import api from "../api/axiosInstance";
 
 const ViewOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState(null); // For modal
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [customerSearch, setCustomerSearch] = useState("");
 
   useEffect(() => {
     fetchOrders();
@@ -19,6 +22,10 @@ const ViewOrders = () => {
     }
   }, [message]);
 
+  useEffect(() => {
+    applyFilters();
+  }, [orders, statusFilter, customerSearch]);
+
   const fetchOrders = async () => {
     try {
       const res = await api.get("/employee/orders");
@@ -29,6 +36,24 @@ const ViewOrders = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...orders];
+
+    if (statusFilter !== "All") {
+      filtered = filtered.filter((order) => order.status === statusFilter);
+    }
+
+    if (customerSearch.trim()) {
+      filtered = filtered.filter((order) =>
+        order.customer?.name
+          ?.toLowerCase()
+          .includes(customerSearch.trim().toLowerCase())
+      );
+    }
+
+    setFilteredOrders(filtered);
   };
 
   const handleCancelOrder = async (orderId) => {
@@ -65,95 +90,127 @@ const ViewOrders = () => {
   };
 
   if (loading) return <p className="text-center mt-4">Loading orders...</p>;
-  if (orders.length === 0)
-    return (
-      <div className="container py-4 d-flex flex-column align-items-center">
-        <h2 className="mb-4 text-center">Orders</h2>
-        <div className="text-center" style={{ maxWidth: "600px" }}>
-          <p className="text-secondary fs-6">
-            You don’t have any orders yet.
-            <br />
-            Once orders are created, they will appear here for easy tracking and
-            management.
-          </p>
-        </div>
-      </div>
-    );
 
   return (
     <div className="container py-4">
       <h2 className="mb-4 text-center">My Orders</h2>
       {message && <div className="alert alert-info text-center">{message}</div>}
 
-      <div className="row g-3">
-        {orders.map((order) => (
-          <div key={order._id} className="col-12 col-md-6 col-lg-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">{order.customer?.name}</h5>
-                {order.customer?.email && <p>📧 {order.customer.email}</p>}
-                {order.customer?.phone && <p>📞 {order.customer.phone}</p>}
-                <p className="fw-bold">
-                  Grand Total: ${order.grandTotal?.toFixed(2)}
-                </p>
-                <p>
-                  <span
-                    className={`badge ${
-                      order.status === "Active"
-                        ? "bg-primary"
-                        : order.status === "Cancelled"
-                        ? "bg-danger"
-                        : "bg-success"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                  {" | "}Payment: {order.paymentStatus}
-                </p>
-
-                {/* Modal trigger */}
-                <button
-                  className="btn btn-sm btn-outline-primary mb-2"
-                  onClick={() => setSelectedOrder(order)}
-                  data-bs-toggle="modal"
-                  data-bs-target="#itemsModal"
-                >
-                  View Items
-                </button>
-
-                {/* Actions */}
-                {order.status === "Active" ? (
-                  <div className="d-flex gap-2 mt-3">
-                    <button
-                      className="btn btn-danger flex-grow-1"
-                      onClick={() => handleCancelOrder(order._id)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="btn btn-success flex-grow-1"
-                      onClick={() => handleCompleteOrder(order._id)}
-                    >
-                      Complete
-                    </button>
-                  </div>
-                ) : (
-                  <div className="d-flex gap-2 mt-3">
-                    <button
-                      className="btn btn-outline-danger flex-grow-1"
-                      onClick={() => handleDeleteOrder(order._id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+      <div className="card mb-4 shadow-sm p-3">
+        <div className="row g-3 align-items-center">
+          <div className="col-md-4">
+            <label className="form-label fw-semibold">Filter by Status</label>
+            <select
+              className="form-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All</option>
+              <option value="Active">Active</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Completed">Completed</option>
+            </select>
           </div>
-        ))}
+
+          <div className="col-md-4">
+            <label className="form-label fw-semibold">Search by Customer</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter customer name..."
+              value={customerSearch}
+              onChange={(e) => setCustomerSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="col-md-4 text-md-end text-center">
+            <button
+              className="btn btn-outline-danger mt-3 mt-md-0"
+              onClick={() => {
+                setStatusFilter("All");
+                setCustomerSearch("");
+              }}
+            >
+              Reset Filters
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Modal for viewing items */}
+      {filteredOrders.length === 0 ? (
+        <div className="text-center mt-4">
+          <p className="text-secondary fs-6">
+            No orders match your filters. Try adjusting the search or filter.
+          </p>
+        </div>
+      ) : (
+        <div className="row g-3">
+          {filteredOrders.map((order) => (
+            <div key={order._id} className="col-12 col-md-6 col-lg-4">
+              <div className="card h-100 shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title">{order.customer?.name}</h5>
+                  {order.customer?.email && <p>📧 {order.customer.email}</p>}
+                  {order.customer?.phone && <p>📞 {order.customer.phone}</p>}
+                  <p className="fw-bold">
+                    Grand Total: ${order.grandTotal?.toFixed(2)}
+                  </p>
+                  <p>
+                    <span
+                      className={`badge ${
+                        order.status === "Active"
+                          ? "bg-primary"
+                          : order.status === "Cancelled"
+                          ? "bg-danger"
+                          : "bg-success"
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                    {" | "}Payment: {order.paymentStatus}
+                  </p>
+
+                  <button
+                    className="btn btn-sm btn-outline-primary mb-2"
+                    onClick={() => setSelectedOrder(order)}
+                    data-bs-toggle="modal"
+                    data-bs-target="#itemsModal"
+                  >
+                    View Items
+                  </button>
+
+                  {order.status === "Active" ? (
+                    <div className="d-flex gap-2 mt-3">
+                      <button
+                        className="btn btn-danger flex-grow-1"
+                        onClick={() => handleCancelOrder(order._id)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="btn btn-success flex-grow-1"
+                        onClick={() => handleCompleteOrder(order._id)}
+                      >
+                        Complete
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="d-flex gap-2 mt-3">
+                      <button
+                        className="btn btn-outline-danger flex-grow-1"
+                        onClick={() => handleDeleteOrder(order._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div
         className="modal fade"
         id="itemsModal"

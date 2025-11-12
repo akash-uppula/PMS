@@ -78,7 +78,6 @@ const HostAdminLogin = () => {
     try {
       const { email, password } = trimmedData;
 
-      // ✅ Always send role to backend
       const response = await api.post(`/${defaultRole}/login`, {
         email,
         password,

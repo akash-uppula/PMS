@@ -73,12 +73,6 @@ const EmployeeDashboard = () => {
       path: "/employee/quotations/finalize",
     },
     {
-      title: "View Finalized Quotations",
-      description: "Check all quotations that have been finalized",
-      emoji: "📑",
-      path: "/employee/quotations/finalized",
-    },
-    {
       title: "View My Orders",
       description: "Check all orders you have created",
       emoji: "🛒",

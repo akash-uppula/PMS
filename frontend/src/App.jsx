@@ -30,8 +30,7 @@ import EmployeeProducts from "./pages/EmployeeProducts";
 import EmployeeSalary from "./pages/EmployeeSalary";
 import CreateQuotation from "./pages/CreateQuotation";
 import ViewDraftQuotations from "./pages/ViewDraftQuotations";
-import FinalizeQuotation from "./pages/FinalizeQuotation";
-import ViewFinalizedQuotations from "./pages/ViewFinalizedQuotations";
+import ManageQuotations from "./pages/ManageQuotations";
 import ViewOrders from "./pages/ViewOrders";
 
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -135,11 +134,7 @@ const App = () => {
             />
             <Route
               path="/employee/quotations/finalize"
-              element={<FinalizeQuotation />}
-            />
-            <Route
-              path="/employee/quotations/finalized"
-              element={<ViewFinalizedQuotations />}
+              element={<ManageQuotations />}
             />
             <Route
               path="/employee/orders/ViewOrders"

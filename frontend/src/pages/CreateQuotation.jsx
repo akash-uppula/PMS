@@ -194,9 +194,10 @@ const CreateQuotation = () => {
 
         <div className="card mb-4 p-3">
           <h5 className="mb-3">Quotation Items</h5>
-          <div className="row fw-bold g-3 mb-2">
-            <div className="col-md-5">Product</div>
+          <div className="row fw-bold g-3 mb-2 text-center">
+            <div className="col-md-3">Product</div>
             <div className="col-md-2">Quantity</div>
+            <div className="col-md-2">Stock</div>
             <div className="col-md-2">Discount (%)</div>
             <div className="col-md-3">Actions</div>
           </div>
@@ -204,10 +205,11 @@ const CreateQuotation = () => {
           {items.map((item, index) => {
             const product = products.find((p) => p._id === item.product);
             const maxDiscount = product?.maxDiscount || 100;
+            const stock = product?.stock || 0;
 
             return (
               <div key={index} className="row g-3 align-items-center mb-2">
-                <div className="col-md-5">
+                <div className="col-md-3">
                   <select
                     className="form-select"
                     value={item.product}
@@ -235,7 +237,14 @@ const CreateQuotation = () => {
                     required
                   />
                 </div>
-
+                <div className="col-md-2">
+                  <input
+                    type="text"
+                    className="form-control text-center bg-light"
+                    value={product ? `${stock}` : "N/A"}
+                    readOnly
+                  />
+                </div>
                 <div className="col-md-2 d-flex flex-column">
                   <input
                     type="number"

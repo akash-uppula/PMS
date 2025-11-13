@@ -74,7 +74,7 @@ export const createQuotation = async (req, res) => {
 export const getQuotations = async (req, res) => {
   try {
     const quotations = await Quotation.find({ createdBy: req.user._id })
-      .populate("items.product", "name price maxDiscount")
+      .populate("items.product", "name price maxDiscount stock")
       .sort({"customer.name": 1, createdAt: -1 });
     res.status(200).json({ status: "success", data: quotations });
   } catch (err) {

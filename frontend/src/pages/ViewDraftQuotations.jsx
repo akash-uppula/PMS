@@ -317,15 +317,18 @@ const ViewDraftQuotations = () => {
 
                 <h6 className="fw-bold mt-4">Items</h6>
                 <div className="row fw-bold text-center mb-2">
-                  <div className="col-md-6">Product</div>
+                  <div className="col-md-4">Product</div>
                   <div className="col-md-2">Quantity</div>
+                  <div className="col-md-2">Stock</div>
                   <div className="col-md-2">Discount (%)</div>
                   <div className="col-md-2">Actions</div>
                 </div>
 
                 {items.map((item, index) => {
                   const product = products.find((p) => p._id === item.product);
-                  const maxDiscount = product?.maxDiscount || 100;
+                  const maxDiscount = product?.maxDiscount || 100;  
+                  const stock = product?.stock || 0;
+
                   const availableProducts = products.filter(
                     (p) =>
                       p._id === item.product ||
@@ -339,7 +342,7 @@ const ViewDraftQuotations = () => {
                       key={index}
                       className="row mb-2 align-items-center text-center"
                     >
-                      <div className="col-md-6">
+                      <div className="col-md-4">
                         <select
                           className="form-select"
                           value={item.product}
@@ -366,6 +369,14 @@ const ViewDraftQuotations = () => {
                           onChange={(e) =>
                             handleItemChange(index, "quantity", e.target.value)
                           }
+                        />
+                      </div>
+                      <div className="col-md-2">
+                        <input
+                          type="text"
+                          className="form-control text-center bg-light"
+                          value={product ? `${stock}` : "N/A"}
+                          readOnly
                         />
                       </div>
                       <div className="col-md-2">

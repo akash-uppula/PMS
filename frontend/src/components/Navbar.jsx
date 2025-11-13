@@ -88,6 +88,12 @@ const Navbar = () => {
                       Login
                     </NavLink>
                   </li>
+
+                  <li className="nav-item">
+                    <NavLink to="/host-admin/login" className="nav-link">
+                      Host Admin
+                    </NavLink>
+                  </li>
                   
                   {!hostAdminExists && (
                     <li className="nav-item">

@@ -74,27 +74,29 @@ This project demonstrates **scalable architecture**, **secure authentication**, 
 ---
 
 ## 🧩 Folder Structure
-- PMS/
-- │
-- ├── frontend/
-- │ ├── public/
-- │ ├── src/
-- │ │ ├── components/ # Reusable UI components
-- │ │ ├── pages/ # Main application pages
-- │ │ ├── api/ # Axios API integration
-- │ │ ├── App.js # Main React app
-- │ │ └── index.js # Entry point
-- │ ├── package.json
-- │ └── README.md
-- │
-- └── backend/
-- ├── models/ # Mongoose schemas
-- ├── routes/ # Express routes
-- ├── controllers/ # Business logic
-- ├── server.js # Node.js entry point & MongoDB connection setup
-- ├── package.json
-- └── .env # Environment variables
+```
+PMS/
+│
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/           # Main application pages
+│   │   ├── api/             # Axios API integration
+│   │   ├── App.js           # Main React app
+│   │   └── index.js         # Entry point
+│   ├── package.json
+│   └── README.md
+│
+├── backend/
+│   ├── models/              # Mongoose schemas
+│   ├── routes/              # Express routes
+│   ├── controllers/         # Business logic
+│   ├── server.js            # Node.js entry point & MongoDB connection setup
+│   ├── package.json
+│   └── .env                 # Environment variables
 
+```
 
 ---
 
